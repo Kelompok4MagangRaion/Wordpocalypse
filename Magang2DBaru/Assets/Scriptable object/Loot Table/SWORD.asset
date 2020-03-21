@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a40694a3e59ad846802f55f6fb43841, type: 3}
+  m_Name: SWORD
+  m_EditorClassIdentifier: 
+  loots:
+  - thisLoot: {fileID: 4700744731113371445, guid: f3ef6fe7b1228c2439bca36ec1badec7,
+      type: 3}
+    chance: 20
+  - thisLoot: {fileID: 5789959686490338311, guid: 387d531cab5897b4abce06e8ec066b0c,
+      type: 3}
+    chance: 20
+  - thisLoot: {fileID: 4563601100258260230, guid: 77c62db276eb35e40840bc2d785173e0,
+      type: 3}
+    chance: 20
+  - thisLoot: {fileID: 5097555590430166868, guid: adae6e44b223d124fa9b5d34633a801c,
+      type: 3}
+    chance: 20
+  - thisLoot: {fileID: 5066771163661443005, guid: 3678f67a01360234f8185f643e1e825b,
+      type: 3}
+    chance: 20
