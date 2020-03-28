@@ -5,12 +5,12 @@ using UnityEngine;
 public class Zombie : Enemy
 {
     private Rigidbody2D rb;
-    private Animator anim;
 
     [Header ("Enemy Chase")]
     public Transform target;
     public float chaseRadius;
     public float attackRadius;
+    public Collider2D boundary;
 
     [Header ("Enemy Attack")]
     public Transform AttackPoint;
@@ -20,7 +20,6 @@ public class Zombie : Enemy
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
         target = GameObject.FindWithTag("Player").transform;
     }
 
@@ -32,10 +31,12 @@ public class Zombie : Enemy
     public virtual void checkDistance()
     {
         if(Vector2.Distance(target.position, transform.position) <= chaseRadius 
-            && Vector2.Distance(target.position, transform.position) > attackRadius)
+            && Vector2.Distance(target.position, transform.position) > attackRadius
+            && boundary.bounds.Contains(target.transform.position))
         {
             if (currentState == EnemyState.idle || currentState == EnemyState.walk && currentState != EnemyState.stagger)
             {
+                audio.PlayOneShot(enemyWalk);
                 Vector2 temp =  Vector2.MoveTowards(transform.position, target.position, moveSpeed * Time.deltaTime);
                 temp.y = transform.position.y;
                 changeDirection(temp - new Vector2(transform.position.x, transform.position.y));
@@ -44,7 +45,8 @@ public class Zombie : Enemy
                 anim.SetBool("Walking", true);
             }
         }
-        else if(Vector2.Distance(target.position, transform.position) > chaseRadius)
+        else if(Vector2.Distance(target.position, transform.position) > chaseRadius
+            || !boundary.bounds.Contains(target.transform.position))
         {
             anim.SetBool("Walking", false);
         }
@@ -61,6 +63,7 @@ public class Zombie : Enemy
 
     public void Attack()
     {
+        audio.PlayOneShot(enemyAttack);
         Collider2D[] hitPlayer = Physics2D.OverlapCircleAll(AttackPoint.position, AttackRange, playerLayer);
 
         foreach (Collider2D player in hitPlayer)
@@ -92,7 +95,7 @@ public class Zombie : Enemy
 
     }
 
-    public void changeDirection(Vector2 distance)
+    public virtual void changeDirection(Vector2 distance)
     {
         distance = distance.normalized;
         if(distance.x > 0)
@@ -104,4 +107,7 @@ public class Zombie : Enemy
             transform.localScale = new Vector3(-1, 1, 1);
         }
     }
+
+    
+    
 }

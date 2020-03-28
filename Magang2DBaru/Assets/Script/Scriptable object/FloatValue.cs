@@ -8,5 +8,4 @@ public class FloatValue : ScriptableObject
     public float InitialValue;
 
     public float RuntimeValue;
-
 }

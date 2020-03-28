@@ -97,6 +97,8 @@ MonoBehaviour:
   speed: 5
   rb: {fileID: -4456561725335844985}
   lifetime: 1
+  knock: 3
+  dmg: 2.5
 --- !u!50 &-4456561725335844985
 Rigidbody2D:
   serializedVersion: 4

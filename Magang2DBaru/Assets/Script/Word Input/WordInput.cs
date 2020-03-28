@@ -11,6 +11,10 @@ public class WordInput : MonoBehaviour
     public List<InventoryItem> daftarItem = new List<InventoryItem>();
     [SerializeField] private InventoryItem thisItem;
 
+    public Slider durSword;
+    public FloatValue durabilitySword;
+    public FloatValue bullet;
+
     private void OnEnable()
     {
         input.text = "";
@@ -21,14 +25,21 @@ public class WordInput : MonoBehaviour
         string text = input.text.ToLower();
         if (cekKata(text))
         {
-            if (cekHuruf(text) == text.Length)
+            if (!cekInventory())
             {
-                Substraction(text);
-                MakeItem();
+                if (cekHuruf(text) == text.Length)
+                {
+                    Substraction(text);
+                    MakeItem();
+                }
+                else
+                {
+                    Debug.Log("Maaf huruf yang anda punya kurang!");
+                }
             }
             else
             {
-                Debug.Log("Maaf huruf yang anda punya kurang!");
+                Debug.Log("Maaf anda sudah punya itemnya!");
             }
         }
         else
@@ -48,6 +59,18 @@ public class WordInput : MonoBehaviour
             }
         }
         return false;
+    }
+
+    bool cekInventory()
+    {
+        if (playerInventory.myInventory.Contains(thisItem))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
 
@@ -92,6 +115,15 @@ public class WordInput : MonoBehaviour
         if (!playerInventory.myInventory.Contains(thisItem))
         {
             playerInventory.myInventory.Add(thisItem);
+            if(thisItem.itemName == "sword")
+            {
+                durabilitySword.RuntimeValue += 20;
+                durSword.maxValue = durabilitySword.RuntimeValue;
+            }
+            if(thisItem.itemName == "gun")
+            {
+                bullet.RuntimeValue += 10;
+            }
             thisItem.numberHeld++;
         }
         else

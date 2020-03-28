@@ -6,16 +6,27 @@ public class KontrolerDasar : MonoBehaviour
 {
     [Header("Player Stuff")]
     public FloatValue playerHealth;
-    public float health;
+    public static float health;
     public Vector2 change;
     public float speed;
     public float jump = 150;
     public bool canAttack = true;
     public LayerMask ground;
+    public HealthBar healthBar;
+
+    [Header("Player Inventory")]
+    public PlayerInventory Inventory;
+
+    [Header("Player Weapon & Durability")]
+    public InventoryItem Sword;
+    public InventoryItem Gun;
+    public FloatValue durabiltySword;
+    public FloatValue bullets;
+    public GameObject durSword;
+    public GameObject bullText;
 
     [Header("Player Attack")]
     public float attackDmg;
-    public float shootDmg;
     public float knock;
     public Transform AttackPoint;
     public float AttackRange = 0.5f;
@@ -30,17 +41,30 @@ public class KontrolerDasar : MonoBehaviour
     private Animator anim;
     private SpriteRenderer sprite;
 
+    [Header("Sound Effect")]
+    AudioSource audio;
+    public AudioClip playerWalk;
+    public AudioClip playerAttack;
+    public AudioClip playerShoot;
+    public AudioClip playerDead;
+
+    [Header("Death")]
+    public GameObject gameOverPanel;
+
     private void Start()
     {
         health = playerHealth.InitialValue;
+        healthBar.setMaxHealth(health); //Ngeset value ke script HealthBar
         tempX = -1;
         tempY = 0;
         rbd = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
-        sprite = GetComponent<SpriteRenderer>();
+        anim = GetComponent<Animator>(); //Untuk animator
+        sprite = GetComponent<SpriteRenderer>(); // Untuk Sprite
+        audio = GetComponent<AudioSource>(); // Untuk sound
     }
     void Update()
     {
+        healthBar.set(health);
         isGround();
         Jump();
         change = Vector2.zero;
@@ -57,7 +81,17 @@ public class KontrolerDasar : MonoBehaviour
     {
         if(collision.gameObject.tag == "Trap")
         {
-            Destroy(this.gameObject);
+            float knocks = 10f;
+            float dmgTrap = 1f;
+            Rigidbody2D hit = this.GetComponent<Rigidbody2D>();
+            //Untuk Knockback
+            if (hit != null)
+            {
+                Vector2 forceDirection = hit.transform.position - collision.transform.position;
+                Vector2 force = forceDirection.normalized * knocks;
+                hit.velocity = force;
+                takeDamage(dmgTrap);
+            }
         }
     }
 
@@ -102,6 +136,7 @@ public class KontrolerDasar : MonoBehaviour
             tempX = change.x;
             tempY = change.y;
             anim.SetBool("Moving",true);
+            audio.PlayOneShot(playerWalk);
         }
         else
         {
@@ -123,15 +158,33 @@ public class KontrolerDasar : MonoBehaviour
 
     void Attack()
     {
-        if (canAttack)
+        if (canAttack && !UIManager.isPaused)
         {
-            if (Input.GetKeyDown(KeyCode.M))
+            if (Inventory.myInventory.Contains(Sword))
             {
-                Melee();
+                durSword.SetActive(true);
+                if(durabiltySword.RuntimeValue <= 0)
+                {
+                    Inventory.myInventory.Remove(Sword);
+                    durSword.SetActive(false);
+                }
+                if (Input.GetKeyDown(KeyCode.M))
+                {
+                    Melee();
+                }
             }
-            if (Input.GetMouseButton(0))
+            if (Inventory.myInventory.Contains(Gun))
             {
-                Shooting();
+                bullText.SetActive(true);
+                if(bullets.RuntimeValue <= 0)
+                {
+                    Inventory.myInventory.Remove(Gun);
+                    bullText.SetActive(false);
+                }
+                if (Input.GetMouseButton(0))
+                {
+                    Shooting();
+                }
             }
         }
     }
@@ -140,11 +193,13 @@ public class KontrolerDasar : MonoBehaviour
     {
         canAttack = false;
         anim.SetTrigger("Attack");
+        audio.PlayOneShot(playerAttack);
 
         Collider2D[] hitEnemy = Physics2D.OverlapCircleAll(AttackPoint.position, AttackRange, enemyLayers);
 
         foreach (Collider2D enemy in hitEnemy)
         {
+            durabiltySword.RuntimeValue -= 1;
             Rigidbody2D hit = enemy.GetComponent<Rigidbody2D>();
             //Untuk Knockback
             if(hit != null) 
@@ -166,8 +221,10 @@ public class KontrolerDasar : MonoBehaviour
 
     void Shooting()
     {
+        bullets.RuntimeValue -= 1;
         canAttack = false;
         anim.SetTrigger("Shooting");
+        audio.PlayOneShot(playerShoot); //Play sound hanya 1x tiap dijalankan methodnya
         Vector2 temp = new Vector2(tempX, tempY);
         Bullet bullet = Instantiate(projectile, bulletHole.transform.position, Quaternion.identity).GetComponent<Bullet>();
         bullet.setup(temp, ChangeDirectionBullet());
@@ -190,10 +247,21 @@ public class KontrolerDasar : MonoBehaviour
     public void takeDamage(float dmg)
     {
         health -= dmg;
+        healthBar.setHealth(dmg);
         if(health <= 0)
         {
-            this.gameObject.SetActive(false);
+            UIManager.isDeath = true;
+            gameOverPanel.SetActive(true);
+            audio.PlayOneShot(playerDead);
+            anim.SetTrigger("Death");
+            StartCoroutine(DeathCo());
         }
+    }
+
+    IEnumerator DeathCo()
+    {
+        yield return new WaitForSeconds(1f);
+        this.gameObject.SetActive(false);
     }
 
 }

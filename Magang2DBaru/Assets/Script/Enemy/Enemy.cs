@@ -22,13 +22,23 @@ public class Enemy : MonoBehaviour
     public float damage;
     public float knock;
     public float moveSpeed;
-    public Vector2 homePosition;
 
     [Header("Death")]
     public LootTable thisLoots;
+    public LootTable thisLoots2;
+
+    [Header("Sound Effect")]
+    public AudioSource audio;
+    public AudioClip enemyWalk;
+    public AudioClip enemyAttack;
+    public AudioClip enemyAlive;
+    public AudioClip enemyDeath;
+
+    public Animator anim;
 
     private void Awake()
     {
+        anim = GetComponent<Animator>();
         health = enemyHealth.InitialValue;
         currentState = EnemyState.idle;
     }
@@ -38,9 +48,18 @@ public class Enemy : MonoBehaviour
         health -= damage;
         if(health <= 0)
         {
-            MakeLoot();
-            this.gameObject.SetActive(false);
+            audio.PlayOneShot(enemyDeath);
+            anim.SetTrigger("Death");
+            StartCoroutine(DeathCo());
         }
+    }
+
+    IEnumerator DeathCo()
+    {
+        yield return new WaitForSeconds(1f);
+        MakeLoot();
+        MakeLoots();
+        this.gameObject.SetActive(false);
     }
 
     void MakeLoot()
@@ -48,6 +67,18 @@ public class Enemy : MonoBehaviour
         if (thisLoots != null)
         {
             Loot current = thisLoots.getLoot();
+            if (current != null)
+            {
+                Instantiate(current.gameObject, transform.position, Quaternion.identity);
+            }
+        }
+    }
+
+    void MakeLoots()
+    {
+        if (thisLoots2 != null)
+        {
+            Loot current = thisLoots2.getLoot();
             if (current != null)
             {
                 Instantiate(current.gameObject, transform.position, Quaternion.identity);

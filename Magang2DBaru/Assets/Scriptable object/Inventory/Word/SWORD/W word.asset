@@ -15,7 +15,7 @@ MonoBehaviour:
   itemName: w
   itemDescription: W word
   itemSprite: {fileID: 21300000, guid: d802e34ad7fb1514bbe68990741f3388, type: 3}
-  numberHeld: 98
+  numberHeld: 0
   usable: 0
   unique: 0
   thisEvent:
